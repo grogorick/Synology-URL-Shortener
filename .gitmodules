@@ -1,0 +1,3 @@
+[submodule "link/style"]
+	path = link/style
+	url = ../Synology-CSS.git
