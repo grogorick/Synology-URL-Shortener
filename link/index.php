@@ -18,8 +18,7 @@ function print_header() {
 	<title>Links</title>
 	<meta name="description" content="private website" />
 	<link rel="stylesheet" href="style/general.css">
-	<style>
-
+	<style type="text/css">
 	</style>
 </head>
 <body>
@@ -150,33 +149,37 @@ if (isset($_SESSION["auth"])) {
 }
 ?>
 	<section>
+		<table>
 <?php
 $second_row = TRUE;
 foreach ($urls as $key => $url) {
 	?>
-		<div class="<?=($second_row = !$second_row) ? "second_row" : ""?>">
+			<tr class="<?=($second_row = !$second_row) ? "second_row" : ""?>">
 	<?php
 	if (isset($_SESSION["auth"])) {
-		?>
-		<form action="" method="post" style="display: inline;">
-			<input type="hidden" name="name" value="<?=$key?>" />
-			<input type="submit" name="delete" value="X" class="button" onclick="return confirm('<?=$key?>\nwirklich löschen?');" />
-		</form>
+?>
+				<td>
+					<form action="" method="post" style="display: inline;">
+						<input type="hidden" name="name" value="<?=$key?>" />
+						<input type="submit" name="delete" value="X" class="button" onclick="return confirm('<?=$key?>\nwirklich löschen?');" />
+					</form>
+				</td>
 		<?php
 	}
 	?>
-	<a href="https://link.yournicedyndnsdomain.com/?<?=$key?>"><?=$key?></a>
+				<td><a href="https://link.yournicedyndnsdomain.com/?<?=$key?>"><?=$key?></a></td>
 	<?php
 	if (isset($_SESSION["auth"])) {
 		?>
-		&nbsp; &#x21E2; &nbsp; <?=$url?>
+				<td>&nbsp; &#x21E2; &nbsp; <?=$url?></td>
 		<?php
 	}
 	?>
-	</div>
+			</tr>
 	<?php
 }
 ?>
+		</table>
 	</section>
 <?php
 
