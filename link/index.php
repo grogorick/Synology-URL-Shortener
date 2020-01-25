@@ -109,7 +109,11 @@ if (!isset($_SESSION["auth"])) {
 
 if (isset($_SESSION["auth"])) {
 	if (isset($_POST["add"]) && isset($_POST["name"]) && !empty(trim($_POST["name"])) && isset($_POST["url"]) && !empty(trim($_POST["url"]))) {
-		$urls[trim($_POST["name"])] = trim($_POST["url"]);
+		$new_url = trim($_POST["url"]);
+		if (preg_match("#http://gofile[.]me/(.+)/(.+)#", $new_url, $matches)) {
+			$new_url = "https://" . CONFIG_DSM_SERVER . "/sharing/" . $matches[2];
+		}
+		$urls[trim($_POST["name"])] = $new_url;
 		file_put_contents(CONFIG_FILE, trim($_POST["name"]) . " " . trim($_POST["url"]) . "\n", FILE_APPEND);
 		show_message("Added: " . $_POST["name"]);
 	}
@@ -141,7 +145,7 @@ if (isset($_SESSION["auth"])) {
 		Neuen Link hinzufügen:
 		<form action="" method="post">
 			<div style="display: inline-block;"><input type="text" name="name" required pattern="[a-zA-Z0-9\-]+" placeholder="Name (Buchstaben, Zahlen, -)" style="width: 200px;" /> &nbsp;</div>
-			<div style="display: inline-block;"> &nbsp; <input type="text" name="url" required placeholder="URL (https://#####.synology.me/photo/share/...)" style="width: 400px;" /> &nbsp;</div>
+			<div style="display: inline-block;"> &nbsp; <input type="text" name="url" required placeholder="URL (https://#####.synology.me/photo/share/... oder http://gofile.me/... oder ...)" style="width: 500px;" /> &nbsp;</div>
 			<input type="submit" name="add" value="speichern" class="button" />
 		</form>
 	</section>
