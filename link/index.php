@@ -151,16 +151,18 @@ if (isset($_SESSION["auth"])) {
 	</section>
 	<?php
 }
+
+if (isset($_SESSION["auth"])) {
 ?>
 	<section>
 		<table>
 <?php
-$second_row = TRUE;
-foreach ($urls as $key => $url) {
+  $second_row = TRUE;
+  foreach ($urls as $key => $url) {
 	?>
 			<tr class="<?=($second_row = !$second_row) ? "second_row" : ""?>">
 	<?php
-	if (isset($_SESSION["auth"])) {
+    if (isset($_SESSION["auth"])) {
 ?>
 				<td>
 					<form action="" method="post" style="display: inline;">
@@ -169,23 +171,24 @@ foreach ($urls as $key => $url) {
 					</form>
 				</td>
 		<?php
-	}
+    }
 	?>
 				<td><a href="https://link.yournicedyndnsdomain.com/?<?=$key?>"><?=$key?></a></td>
 	<?php
-	if (isset($_SESSION["auth"])) {
+    if (isset($_SESSION["auth"])) {
 		?>
 				<td>&nbsp; &#x21E2; &nbsp; <?=$url?></td>
 		<?php
-	}
+    }
 	?>
 			</tr>
 	<?php
-}
+  }
 ?>
 		</table>
 	</section>
 <?php
+}
 
 print_footer();
 ?>
