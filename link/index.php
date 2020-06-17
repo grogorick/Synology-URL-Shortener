@@ -1,10 +1,11 @@
 <?php
 
 define("CONFIG_FILE", "urls.txt");
+// define("CONFIG_TRACKING_FILE", "locations.txt");
 
 define("CONFIG_DSM_SERVER", "#####.synology.me:5001");
 define("CONFIG_SESSION_TIMEOUT", 1800);
-
+define("CONFIG_IP_LOCATION_URL", "http://ip-api.com/csv/");
 
 
 function print_header() {
@@ -35,32 +36,57 @@ function print_footer() {
 function show_message($msg) {
 ?>
 	<section>
-	<span class="message"><?=$msg?></span>
+		<span class="message"><?=$msg?></span>
 	</section>
 <?php
 }
 
 
 
+function track_visitor_location($url) {
+	if (!defined(CONFIG_TRACKING_FILE)) {
+		return;
+	}
+	$ip_fields = ["HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR", "REMOTE_ADDR"];
+	$ips = [];
+	foreach ($ip_fields as $field) {
+		if (isset($_SERVER[$field]) && !array_key_exists($_SERVER[$field], $ips)) {
+			$location = file_get_contents(CONFIG_IP_LOCATION_URL . $_SERVER[$field]);
+			if ($location === FALSE) {
+				$location = $_SERVER[$field];
+			}
+			$ips[$_SERVER[$field]] = date("H:i d.m.Y") . "," . $url . "," . $location;
+		}
+	}
+	if (!empty($ips)) {
+		file_put_contents(CONFIG_TRACKING_FILE, PHP_EOL . implode("", $ips), FILE_APPEND | LOCK_EX);
+	}
+}
+
+
+
 $urls = array();
 $lines = array_filter(explode("\n", file_get_contents(CONFIG_FILE)));
-foreach ($lines as $line) {	
+foreach ($lines as $line) {
 	$url = explode(" ", $line);
 	$urls[$url[0]] = $url[1];
 }
 
 if (count($_GET)) {
 	$name = trim(array_keys($_GET)[0]);
-	foreach ($urls as $key => $url) {
-		if ($key === $name) {
-			header("Location: " . $url);
-			exit;
+	if ($name !== "list") {
+		foreach ($urls as $key => $url) {
+			if ($key === $name) {
+				track_visitor_location($name);
+				header("Location: " . $url);
+				exit;
+			}
 		}
+		print_header();
+		show_message("Not found: " . $name);
+		print_footer();
+		exit;
 	}
-	print_header();
-	show_message("Not found: " . $name);
-	print_footer();
-	exit;
 }
 
 
@@ -85,7 +111,7 @@ if (!isset($_SESSION["auth"]) && isset($_POST["user"]) && isset($_POST["pass"]))
 }
 
 if (isset($_SESSION["auth"])) {
-	if (time() - $_SESSION["auth"] > CONFIG_SESSION_TIMEOUT || isset($_POST["logout"])) {
+	if (isset($_POST["logout"]) || time() - $_SESSION["auth"] > CONFIG_SESSION_TIMEOUT) {
 		session_unset();
 	}
 	else {
@@ -108,6 +134,17 @@ if (!isset($_SESSION["auth"])) {
 
 
 if (isset($_SESSION["auth"])) {
+
+?>
+	<section>
+		<?=$_SESSION["user"]?> &nbsp;
+		<form action="" method="post">
+			<input type="submit" name="logout" value="ausloggen" class="button" />
+		</form>
+		<hr />
+	</section>
+<?php
+
 	if (isset($_POST["add"]) && isset($_POST["name"]) && !empty(trim($_POST["name"])) && isset($_POST["url"]) && !empty(trim($_POST["url"]))) {
 		$new_url = trim($_POST["url"]);
 		if (preg_match("#http://gofile[.]me/(.+)/(.+)#", $new_url, $matches)) {
@@ -129,18 +166,8 @@ if (isset($_SESSION["auth"])) {
 		file_put_contents(CONFIG_FILE, $filecontent);
 		show_message("Removed: " . $_POST["name"]);
 	}
-}
 
-if (isset($_SESSION["auth"])) {
-	?>
-	<section>
-		<?=$_SESSION["user"]?> &nbsp;
-		<form action="" method="post">
-			<input type="submit" name="logout" value="ausloggen" class="button" />
-		</form>
-		<hr />
-	</section>
-
+?>
 	<section>
 		Neuen Link hinzufügen:
 		<form action="" method="post">
@@ -149,20 +176,20 @@ if (isset($_SESSION["auth"])) {
 			<input type="submit" name="add" value="speichern" class="button" />
 		</form>
 	</section>
-	<?php
+<?php
 }
 
-if (isset($_SESSION["auth"])) {
+if (isset($_GET["list"]) || isset($_SESSION["auth"])) {
 ?>
 	<section>
 		<table>
 <?php
-  $second_row = TRUE;
-  foreach ($urls as $key => $url) {
-	?>
+	$second_row = TRUE;
+	foreach ($urls as $key => $url) {
+?>
 			<tr class="<?=($second_row = !$second_row) ? "second_row" : ""?>">
-	<?php
-    if (isset($_SESSION["auth"])) {
+<?php
+		if (isset($_SESSION["auth"])) {
 ?>
 				<td>
 					<form action="" method="post" style="display: inline;">
@@ -170,20 +197,20 @@ if (isset($_SESSION["auth"])) {
 						<input type="submit" name="delete" value="X" class="button" onclick="return confirm('<?=$key?>\nwirklich löschen?');" />
 					</form>
 				</td>
-		<?php
-    }
-	?>
+<?php
+		}
+?>
 				<td><a href="https://link.yournicedyndnsdomain.com/?<?=$key?>"><?=$key?></a></td>
-	<?php
-    if (isset($_SESSION["auth"])) {
-		?>
+<?php
+		if (isset($_SESSION["auth"])) {
+?>
 				<td>&nbsp; &#x21E2; &nbsp; <?=$url?></td>
-		<?php
-    }
-	?>
+<?php
+		}
+?>
 			</tr>
-	<?php
-  }
+<?php
+	}
 ?>
 		</table>
 	</section>
