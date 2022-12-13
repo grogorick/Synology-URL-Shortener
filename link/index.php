@@ -167,7 +167,7 @@ if (isset($_SESSION["auth"])) {
 		Neuen Link hinzufügen:
 		<form action="" method="post">
 			<div style="display: inline-block;"><input type="text" name="name" required pattern="[a-zA-Z0-9\-]+" placeholder="Name (Buchstaben, Zahlen, -)" style="width: 200px;" /> &nbsp;</div>
-			<div style="display: inline-block;"> &nbsp; <input type="text" name="url" required placeholder="URL (https://<?=CONFIG_DSM_SERVER?>/photo/share/... oder http://gofile.me/... oder ...)" style="width: 500px;" /> &nbsp;</div>
+			<div style="display: inline-block;"> &nbsp; <input type="text" name="url" required placeholder="URL (https://<?=CONFIG_DSM_SERVER?>/photo/share/... oder https://<?=CONFIG_DSM_SERVER?>:5001/sharing/... oder ...)" style="width: 500px;" /> &nbsp;</div>
 			<input type="submit" name="add" value="speichern" class="button" />
 		</form>
 	</section>
@@ -195,7 +195,7 @@ if (isset($_GET["list"]) || isset($_SESSION["auth"])) {
 <?php
 		}
 ?>
-				<td><a href="https://<?=CONFIG_SHORT_URL?>/?<?=$key?>"><?=$key?></a></td>
+				<td><a href="https://<?=CONFIG_SHORT_URL?>/<?=CONFIG_USE_HTACCESS_REDIRECT?'':'?'?><?=$key?>"><?=$key?></a></td>
 <?php
 		if (isset($_SESSION["auth"])) {
 ?>
