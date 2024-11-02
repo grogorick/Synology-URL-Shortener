@@ -90,12 +90,14 @@ session_start();
 
 print_header();
 
+// https://help.synology.com/developer-guide/integrate_dsm/web_authentication.html
+
 if (!isset($_SESSION["auth"]) && isset($_POST["user"]) && isset($_POST["pass"])) {
-	$url = "https://" . CONFIG_DSM_SERVER . ":" . CONFIG_DSM_PORT . "/webapi/auth.cgi?api=SYNO.API.Auth&version=3&session=FileStation&method=login&account=" . $_POST["user"] . "&passwd=" . rawurlencode($_POST["pass"]) . "&format=cookie";
+	$url = "https://" . CONFIG_DSM_SERVER . ":" . CONFIG_DSM_PORT . "/webapi/auth.cgi?api=SYNO.API.Auth&version=3&method=login&account=" . $_POST["user"] . "&passwd=" . rawurlencode($_POST["pass"]) . "&format=cookie";
 	$response = file_get_contents($url);
 	$json = json_decode($response);
 	if ($json->success) {
-		file_get_contents("https://" . CONFIG_DSM_SERVER . ":" . CONFIG_DSM_PORT . "/webapi/auth.cgi?api=SYNO.API.Auth&version=1&session=FileStation&method=logout");
+		file_get_contents("https://" . CONFIG_DSM_SERVER . ":" . CONFIG_DSM_PORT . "/webapi/auth.cgi?api=SYNO.API.Auth&version=1&method=logout");
 		session_regenerate_id(true);
 		$_SESSION["user"] = $_POST["user"];
 		$_SESSION["auth"] = time();
